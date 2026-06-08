@@ -1,1 +1,1058 @@
-# CreativitySmpPage
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creativity SMP</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --space-bg: #020208;
+            --nebula-purple: #7c3aed;
+            --nebula-blue: #3b82f6;
+            --gear-orange: #f97316;
+            --gear-orange-hover: #ea580c;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(8, 12, 24, 0.65);
+            --card-border: rgba(255, 255, 255, 0.07);
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--space-bg); }
+        ::-webkit-scrollbar-thumb { background: rgba(249, 115, 22, 0.25); border-radius: 20px; border: 2px solid var(--space-bg); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gear-orange); }
+
+        body {
+            background-color: var(--space-bg);
+            background-image: 
+                radial-gradient(at 5% 5%, rgba(124, 58, 237, 0.18) 0px, transparent 60%),
+                radial-gradient(at 95% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 60%),
+                radial-gradient(at 50% 85%, rgba(249, 115, 22, 0.1) 0px, transparent 65%);
+            color: var(--text-light);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-attachment: fixed;
+            line-height: 1.7;
+        }
+
+        /* --- IMMERSIVE DISASTER MATRIX BACKGROUND CANVAS --- */
+        #disasterCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* --- MAGNETIC QUANTUM MOUSE CURSOR --- */
+        .custom-cursor-ring {
+            width: 32px; height: 32px; border: 1.5px solid var(--gear-orange); border-radius: 50%;
+            position: fixed; transform: translate(-50%, -50%); pointer-events: none; z-index: 99999;
+            mix-blend-mode: screen; box-shadow: 0 0 10px rgba(249, 115, 22, 0.3);
+            will-change: top, left, width, height, border-color, background-color;
+            transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .custom-cursor-dot {
+            width: 4px; height: 4px; background-color: var(--text-light); border-radius: 50%;
+            position: fixed; transform: translate(-50%, -50%); pointer-events: none; z-index: 100000; will-change: top, left;
+        }
+
+        .custom-cursor-ring.hovered {
+            width: 58px; height: 58px; background-color: rgba(124, 58, 237, 0.15); border-color: var(--nebula-blue); box-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
+        }
+
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 6px 100%; z-index: 9999; pointer-events: none; opacity: 0.35;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background: rgba(2, 2, 8, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid var(--card-border); position: sticky; top: 0; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center; padding: 1.4rem 8%;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif; font-size: 1.7rem; font-weight: 900; letter-spacing: 3px;
+            background: linear-gradient(135deg, #fff 40%, var(--gear-orange) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 12px;
+        }
+
+        .logo i { -webkit-text-fill-color: var(--gear-orange); animation: pulseGlow 4s ease-in-out infinite; }
+
+        @keyframes pulseGlow { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--gear-orange)); } 50% { transform: scale(1.12); filter: drop-shadow(0 0 15px var(--gear-orange)); } }
+
+        .nav-links { display: flex; list-style: none; gap: 2.5rem; }
+        .nav-links li a {
+            color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 1.05rem;
+            transition: var(--transition-smooth); cursor: pointer; position: relative; padding: 0.5rem 0;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .nav-links li a:hover, .nav-links li a.active { color: var(--text-light); }
+        .nav-links li a::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background: linear-gradient(to right, var(--gear-orange), var(--nebula-purple)); transition: var(--transition-smooth);
+        }
+        .nav-links li a:hover::after, .nav-links li a.active::after { width: 100%; }
+
+        .container { max-width: 1500px; margin: 0 auto; padding: 2rem 5% 6rem; position: relative; z-index: 10; }
+
+        .page { display: none; opacity: 0; }
+        .page.active { display: block; animation: pageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes pageEnter { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HERO SECTION --- */
+        .hero { text-align: center; padding: 13rem 1rem 12rem; position: relative; }
+        .hero::before {
+            content: ''; position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, rgba(249, 115, 22, 0.04) 50%, transparent 70%);
+            border-radius: 50%; filter: blur(60px); z-index: -1; animation: breatheGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes breatheGlow { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; } 50% { transform: translate(-50%, -50%) scale(1.25); opacity: 0.9; } }
+
+        .server-badge {
+            display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.6rem 1.6rem; border-radius: 40px; font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem; letter-spacing: 2px; color: #fcd34d; margin-bottom: 3rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: floatingBadge 4s ease-in-out infinite;
+        }
+
+        @keyframes floatingBadge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 7.5rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -3px; line-height: 0.95;
+            background: linear-gradient(to bottom, #ffffff 20%, #a5b4fc 65%, #6366f1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.7));
+        }
+
+        .hero p { font-size: 1.65rem; color: var(--text-muted); max-width: 950px; margin: 0 auto 4.5rem; font-weight: 300; line-height: 1.6; }
+        .hero-buttons { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+
+        /* UI Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--gear-orange) 0%, var(--gear-orange-hover) 100%); color: white; border: none; padding: 1.25rem 2.8rem; font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: var(--transition-smooth); text-decoration: none; display: inline-flex; align-items: center; gap: 14px;
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.25);
+        }
+        .btn:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5); }
+        .btn-discord { background: linear-gradient(135deg, #5865F2 0%, #404eed 100%); box-shadow: 0 6px 20px rgba(88, 101, 242, 0.25); }
+        .btn-discord:hover { box-shadow: 0 12px 30px rgba(88, 101, 242, 0.5); }
+
+        .section-title { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 2.6rem; margin: 8rem 0 4.5rem; letter-spacing: 2px; position: relative; }
+        .section-title::after { content: ''; display: block; width: 80px; height: 4px; background: var(--gear-orange); margin: 1rem auto 0; border-radius: 4px; }
+
+        /* MOD GRID */
+        .mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 3rem; margin-bottom: 6rem; }
+        .mod-card {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 3.5rem 3rem;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); transition: var(--transition-smooth); position: relative; overflow: hidden;
+        }
+        .mod-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent, rgba(249, 115, 22, 0.05), transparent); transform: translateX(-100%); transition: transform 0.8s ease;
+        }
+        .mod-card:hover::before { transform: translateX(100%); }
+        .mod-card:hover { transform: translateY(-10px); border-color: rgba(249, 115, 22, 0.4); background: rgba(12, 18, 36, 0.8); box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5); }
+        
+        .card-icon-wrapper {
+            width: 60px; height: 60px; background: rgba(255,255,255,0.04); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.8rem;
+            color: var(--gear-orange); font-size: 1.7rem; transition: var(--transition-smooth);
+        }
+        .mod-card:hover .card-icon-wrapper { background: rgba(249, 115, 22, 0.2); transform: scale(1.15) rotate(-6deg); color: #fff; box-shadow: 0 0 20px rgba(249, 115, 22, 0.5); }
+        
+        .mod-card h3 { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: #fff; letter-spacing: 1px; }
+        .mod-card p { color: var(--text-muted); font-size: 1.05rem; }
+
+        /* Server Specs Showcase */
+        .specs-showcase {
+            background: rgba(4, 6, 18, 0.6); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 24px; padding: 5rem; margin: 8rem 0; display: grid;
+            grid-template-columns: 1.2fr 0.8fr; gap: 5rem; align-items: center; backdrop-filter: blur(15px);
+        }
+        .specs-content h3 { font-family: 'Orbitron', sans-serif; font-size: 2.3rem; margin-bottom: 1.5rem; background: linear-gradient(to right, #fff, var(--nebula-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .specs-list { list-style: none; margin-top: 2rem; }
+        .specs-list li { display: flex; align-items: center; gap: 14px; margin-bottom: 1.2rem; font-size: 1.15rem; }
+        .specs-list li i { color: #34d399; }
+
+        /* --- IMMERSIVE FOOTER FOOTPRINT (HOME END) --- */
+        .home-footer-cta {
+            background: linear-gradient(180deg, rgba(8, 12, 24, 0) 0%, rgba(124, 58, 237, 0.05) 50%, rgba(249, 115, 22, 0.04) 100%);
+            border: 1px solid var(--card-border); border-radius: 24px; padding: 6rem 4rem;
+            margin-top: 10rem; text-align: center; position: relative; overflow: hidden;
+        }
+        .channel-badge-container { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin: 2.5rem 0 3.5rem; }
+        .channel-tag {
+            background: rgba(88, 101, 242, 0.1); border: 1px solid rgba(88, 101, 242, 0.2); padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 0.95rem; color: #a5b4fc; display: flex; align-items: center; gap: 8px; font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Forms & Admin Panel Framework */
+        .panel-wrapper {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; padding: 3.5rem; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); max-width: 900px; margin: 0 auto;
+        }
+        .form-group { margin-bottom: 1.8rem; }
+        label { display: flex; align-items: center; gap: 8px; margin-bottom: 0.7rem; color: #cbd5e1; font-size: 1rem; font-weight: 500; }
+        input[type="text"], input[type="password"], select, textarea {
+            width: 100%; padding: 1rem 1.3rem; background: rgba(2, 2, 8, 0.7);
+            border: 1px solid rgba(255,255,255,0.09); border-radius: 8px; color: white;
+            font-family: inherit; font-size: 1rem; transition: var(--transition-smooth);
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gear-orange); box-shadow: 0 0 12px rgba(249, 115, 22, 0.25); }
+        
+        input[type="range"] { width: 100%; margin: 8px 0; accent-color: var(--gear-orange); cursor: pointer; }
+        .range-container { display: flex; align-items: center; gap: 14px; }
+        .range-value { font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--gear-orange); min-width: 25px; font-size: 1.1rem; }
+        .checkbox-label { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; font-size: 1rem; }
+        .checkbox-label input { width: 18px; height: 18px; accent-color: var(--gear-orange); }
+
+        .modpack-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; text-align: left; }
+        .modpack-table th, .modpack-table td { padding: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 1rem; }
+        .modpack-table th { font-family: 'Orbitron', sans-serif; color: var(--text-muted); font-size: 0.9rem; letter-spacing: 1px; }
+
+        .btn-sm { padding: 0.5rem 1.2rem; font-size: 0.85rem; border-radius: 6px; }
+        .btn-danger { background: #ef4444; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15); }
+        .btn-danger:hover { background: #dc2626; box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35); }
+        .grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+        .discord-box {
+            background: rgba(43, 45, 49, 0.2); border: 1px solid rgba(88, 101, 242, 0.2); border-radius: 16px; padding: 4rem 3rem; max-width: 600px; margin: 0 auto; text-align: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+
+        @keyframes rotateGear { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        @media (max-width: 1200px) {
+            .hero h1 { font-size: 5.8rem; }
+            .hero { padding: 10rem 1rem 11rem; }
+            .specs-showcase { grid-template-columns: 1fr; gap: 3rem; padding: 3.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .grid-two { grid-template-columns: 1fr; gap: 1rem; }
+            .hero h1 { font-size: 3.6rem; letter-spacing: -1px; }
+            nav { flex-direction: column; gap: 1.2rem; padding: 1.2rem; }
+            .nav-links { gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+            .custom-cursor-ring, .custom-cursor-dot { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="custom-cursor-ring" id="cursorRing"></div>
+    <div class="custom-cursor-dot" id="cursorDot"></div>
+
+    <canvas id="disasterCanvas"></canvas>
+
+    <nav>
+        <div class="logo"><i class="fa-solid fa-atom"></i> Creativity SMP</div>
+        <ul class="nav-links">
+            <li><a onclick="switchPage('home')" id="nav-home" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a onclick="switchPage('server-info')" id="nav-server-info"><i class="fa-solid fa-server"></i> Server Address</a></li>
+            <li><a onclick="switchPage('discord-view')" id="nav-discord-view"><i class="fa-brands fa-discord"></i> Discord</a></li>
+            <li><a onclick="switchPage('apply')" id="nav-apply"><i class="fa-solid fa-id-card"></i> Apply</a></li>
+            <li><a onclick="switchPage('admin-login-view')" id="nav-admin-login-view"><i class="fa-solid fa-lock"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+
+        <div id="home" class="page active">
+            <div class="hero">
+                <div class="server-badge" id="liveSeasonBadge"><i class="fa-solid fa-rocket"></i> Season 1 Now Operational</div>
+                <h1>CREATIVITY SMP</h1>
+                <p>An immersive engineering sandbox packed with over 150 heavy industrial and aeronautical modules. Master advanced structural mechanics configured perfectly to deliver maximum performance from just 4GB of allocated RAM.</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-discord" onclick="switchPage('discord-view')"><i class="fa-brands fa-discord"></i> Join Discord Hub</button>
+                    <button class="btn" onclick="switchPage('server-info')"><i class="fa-solid fa-server"></i> Connection Parameters</button>
+                </div>
+            </div>
+
+            <h2 class="section-title">Core Gameplay Systems</h2>
+            <div class="mod-grid">
+                <div class="mod-card">
+                    <div class="card-icon-wrapper"><i class="fa-solid fa-plane-departure"></i></div>
+                    <h3>Create Aeronautics</h3>
+                    <p>Real-time aeronautical physics. Construct scalable heavy airships, customize automated cargo vehicles, and navigate across dynamic horizons.</p>
+                </div>
+                <div class="mod-card">
+                    <div class="card-icon-wrapper"><i class="fa-solid fa-burst"></i></div>
+                    <h3>Create Big Cannons</h3>
+                    <p>Large scale tactical artillery warfare. Cast customized kinetic components, automate modular shell factories, and fortify bases against rival factions.</p>
+                </div>
+                <div class="mod-card">
+                    <div class="card-icon-wrapper"><i class="fa-solid fa-microchip"></i></div>
+                    <h3>Extreme Optimization</h3>
+                    <p>Say goodbye to client-side stuttering. Our architectural configurations guarantee fluid rendering and fast asynchronous chunk generation.</p>
+                </div>
+            </div>
+
+            <div class="specs-showcase">
+                <div class="specs-content">
+                    <h3>Engineered for Massive Scale Automation</h3>
+                    <p>Creativity SMP presents a fully balanced environment where automated industry supports strategic territorial defense. Assemble custom manufacturing pipelines, process volatile resources, and control local trade networks.</p>
+                    <ul class="specs-list">
+                        <li><i class="fa-solid fa-circle-check"></i> Optimized environment for stable multiplayer sessions</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Strict Vanilla Anarchy / Custom Trust Laws</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Player-Driven Dynamic Logistics and Trading Network</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.12); padding: 4rem; border-radius: 16px; text-align: center;">
+                    <i class="fa-solid fa-gears" style="font-size: 5.5rem; color: var(--gear-orange); animation: rotateGear 12s linear infinite;"></i>
+                    <h4 style="font-family:'Orbitron'; margin-top:2rem; font-size:1.2rem;">Detailed Regulations Inside</h4>
+                    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:0.6rem;">Please check our official Discord server to review detailed documentation and community rules.</p>
+                </div>
+            </div>
+
+            <div class="home-footer-cta">
+                <h2 style="font-family:'Orbitron'; font-size: 2.5rem; margin-bottom: 1rem;">Ready to Play?</h2>
+                <p style="color: var(--text-muted); max-width: 700px; margin: 0 auto; font-size: 1.15rem;">Join our community! Hop into our Discord server to download the modpack, read the rules, and start playing with us.</p>
+                
+                <div class="channel-badge-container">
+                    <div class="channel-tag"><i class="fa-solid fa-hashtag"></i> announcements</div>
+                    <div class="channel-tag"><i class="fa-solid fa-hashtag"></i> server-rules</div>
+                    <div class="channel-tag"><i class="fa-solid fa-hashtag"></i> modpack-download</div>
+                    <div class="channel-tag"><i class="fa-solid fa-hashtag"></i> support-tickets</div>
+                </div>
+
+                <div class="hero-buttons">
+                    <a href="https://discord.gg/qABHn55Wn5" target="_blank" class="btn btn-discord"><i class="fa-brands fa-discord"></i> Join Discord Hub</a>
+                    <button class="btn" onclick="switchPage('server-info')"><i class="fa-solid fa-right-to-bracket"></i> Join Server Network</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="server-info" class="page">
+            <h2 class="section-title">Connection Parameters</h2>
+            
+            <div style="max-width:700px; margin: 0 auto 4rem; text-align:center;">
+                <div style="background: rgba(10, 18, 36, 0.7); border: 1px solid rgba(59,130,246,0.3); padding: 1.5rem; border-radius: 12px; font-size: 1.6rem; font-family: 'Orbitron', monospace; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 14px;" onclick="copyIP()">
+                    <i class="fa-solid fa-terminal" style="color: var(--gear-orange);"></i>
+                    <span>items-bigger.gl.joinmc.link</span>
+                    <i class="fa-regular fa-copy copy-icon" style="color: var(--nebula-blue); font-size: 1.1rem;"></i>
+                </div>
+                <p style="margin-top: 1rem; font-size:0.95rem; color:var(--text-muted);"><i class="fa-solid fa-pointer"></i> Click anywhere on the address console block to copy the server IP to your clipboard.</p>
+            </div>
+
+            <div class="panel-wrapper">
+                <h3 style="font-family:'Orbitron'; font-size:1.35rem; margin-bottom:1rem; display:flex; align-items:center; gap:12px;">
+                    <i class="fa-solid fa-box-open" style="color: var(--gear-orange);"></i> Public Modpack Distributions
+                </h3>
+                <p style="color: var(--text-muted); font-size:1rem; margin-bottom: 1.5rem;">Download official compressed archive packages validated by our systems engineering team.</p>
+                
+                <div style="overflow-x: auto;">
+                    <table class="modpack-table">
+                        <thead>
+                            <tr>
+                                <th>Version Tag</th>
+                                <th>Release Date</th>
+                                <th>Archive File (.mrpack)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="publicModpackList">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="discord-view" class="page">
+            <h2 class="section-title">Community Hub</h2>
+            <div class="discord-box">
+                <i class="fa-brands fa-discord" style="font-size: 4rem; color: #5865F2; margin-bottom: 1.5rem;"></i>
+                <h3 style="font-family:'Orbitron'; font-size: 1.4rem; margin-bottom: 0.8rem;">Connect with Operations</h3>
+                <p style="color: var(--text-muted); font-size:1.05rem; margin-bottom: 2.5rem;">Join our secure portal to monitor live status logs, track patch updates, submit support tickets, or form technical production alliances.</p>
+                <a href="https://discord.gg/qABHn55Wn5" target="_blank" class="btn btn-discord" style="padding: 1.1rem 2.5rem; width: 100%; justify-content: center;"><i class="fa-solid fa-right-to-bracket"></i> Connect to Discord Guild</a>
+            </div>
+        </div>
+
+        <div id="apply" class="page">
+            <h2 class="section-title">Staff Recruitment Form</h2>
+            <div class="panel-wrapper">
+                <form id="quizForm" onsubmit="submitForm(event)">
+                    <div class="grid-two">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-user"></i> Minecraft Username:</label>
+                            <input type="text" id="q1" placeholder="e.g., Cosmic_Engineer" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-brands fa-discord"></i> Discord Handle:</label>
+                            <input type="text" id="q2" placeholder="e.g., cosmic.user" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-calendar-days"></i> Connection Availability:</label>
+                        <select id="q3" required>
+                            <option value="">Select weekly timeline availability...</option>
+                            <option value="1-2 days a week">Casual Interaction (1-2 days per week)</option>
+                            <option value="3-4 days a week">Moderate Monitoring (3-4 days per week)</option>
+                            <option value="5-7 days a week">High Availability (5-7 days per week)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-sliders"></i> Core Proficiencies & Experience:</label>
+                        <textarea id="q4" rows="5" placeholder="Elaborate on your previous administration background, server tool knowledge, core command familiarity..." required></textarea>
+                    </div>
+
+                    <div class="grid-two">
+                        <div class="form-group">
+                            <label>Respect towards administrative structural hierarchy:</label>
+                            <div class="range-container">
+                                <input type="range" id="q5" min="1" max="10" value="5" oninput="document.getElementById('l5').innerText = this.value">
+                                <span class="range-value" id="l5">5</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Teamwork and internal peer collaboration level:</label>
+                            <div class="range-container">
+                                <input type="range" id="q6" min="1" max="10" value="5" oninput="document.getElementById('l6').innerText = this.value">
+                                <span class="range-value" id="l6">5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-two">
+                        <div class="form-group">
+                            <label>Strict alignment with execution guidelines:</label>
+                            <div class="range-container">
+                                <input type="range" id="q7" min="1" max="10" value="5" oninput="document.getElementById('l7').innerText = this.value">
+                                <span class="range-value" id="l7">5</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Processing speed for complex procedural directives:</label>
+                            <div class="range-container">
+                                <input type="range" id="q8" min="1" max="10" value="5" oninput="document.getElementById('l8').innerText = this.value">
+                                <span class="range-value" id="l8">5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem; margin-bottom: 2.5rem;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="q9" required>
+                            <span>I certify that I will preserve complete operational data secrecy regarding administration affairs.</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                        <i class="fa-solid fa-paper-plane"></i> Dispatch Application Profiles
+                    </button>
+                </form>
+
+                <div id="userStatusBox" style="display:none; margin-top: 2.5rem; padding: 2rem; border-radius: 12px; text-align: center;"></div>
+            </div>
+        </div>
+
+        <div id="admin-login-view" class="page">
+            <h2 class="section-title">Operator Console</h2>
+            
+            <div class="panel-wrapper" id="adminAuthBox">
+                <h3 style="font-family: 'Orbitron'; font-size: 1.3rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-lock" style="color: var(--nebula-blue);"></i> Restricted Access Terminal
+                </h3>
+                <div class="form-group" style="max-width: 550px; margin-bottom: 2rem;">
+                    <label>Master Passphrase Token:</label>
+                    <div style="display:flex; gap:12px;">
+                        <input type="password" id="adminPassword" placeholder="Enter security access hash key...">
+                    </div>
+                </div>
+                
+                <button class="btn" style="width: 100%; justify-content: center;" onclick="loginAdmin()"><i class="fa-solid fa-unlock-keyhole"></i> Decrypt & Access Terminal</button>
+            </div>
+
+            <div class="panel-wrapper" id="adminPanel" style="display: none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1.2rem;">
+                    <h3 style="font-family:'Orbitron'; color: #fcd34d; margin:0; display:flex; align-items:center; gap:12px; font-size: 1.3rem;">
+                        <i class="fa-solid fa-folder-gear"></i> Core Database Management
+                    </h3>
+                    <button class="btn btn-sm btn-secondary" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> Terminate Session</button>
+                </div>
+                
+                <h4 style="font-family:'Orbitron'; color: #cbd5e1; font-size: 1.05rem; margin-bottom: 1.2rem;"><i class="fa-solid fa-pen-to-square"></i> Modify Active Season Badge</h4>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Season Display Status Text:</label>
+                    <input type="text" id="seasonTextInput" placeholder="e.g., Season 2 Now Operational">
+                </div>
+                
+                <button class="btn" style="margin-bottom: 3.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);" onclick="updateSeasonBadge()"><i class="fa-solid fa-sync"></i> Deploy Badge State</button>
+
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:2.5rem;">
+
+                <h4 style="font-family:'Orbitron'; color: var(--gear-orange); font-size: 1.05rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-cloud-arrow-up"></i> Deploy New Modpack Build</h4>
+                <div class="grid-two" style="margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label>Build Version Tag:</label>
+                        <input type="text" id="modpackVersion" placeholder="e.g., Build-v1.4.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Modpack Archive File (.mrpack):</label>
+                        <input type="file" id="modpackFile" accept=".mrpack" style="padding:0.6rem; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:white; border-radius:8px; width:100%;">
+                    </div>
+                </div>
+                <button class="btn" style="margin-bottom: 3.5rem;" onclick="uploadModpack()"><i class="fa-solid fa-bolt"></i> Push to Production</button>
+
+                <h4 style="font-family:'Orbitron'; color: #34d399; font-size: 1.05rem; margin-bottom:1.2rem;"><i class="fa-solid fa-folder-tree"></i> Active Live Distributions</h4>
+                <div style="overflow-x: auto; margin-bottom: 4rem;">
+                    <table class="modpack-table">
+                        <thead>
+                            <tr>
+                                <th>Version</th>
+                                <th>Target Filename (.mrpack)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminModpackList">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 2.5rem;">
+                    <h4 style="font-family:'Orbitron'; color: #60a5fa; font-size: 1.05rem; margin:0;"><i class="fa-solid fa-users"></i> Staff Application Backlog Queue</h4>
+                    <button class="btn btn-sm btn-danger" onclick="clearAllApplications()"><i class="fa-solid fa-dumpster-fire"></i> Wipe Databank</button>
+                </div>
+                <div id="applicationsList" style="color: var(--text-muted);">No profiles currently registered in system memory.</div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- FIREBASE MATRIX INITIALIZATION CLOUD HUB ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyASnqFjiE-1Lo6jbWQmVm7NayP59H84ay4",
+            authDomain: "creativity-1e48a.firebaseapp.com",
+            projectId: "creativity-1e48a",
+            storageBucket: "creativity-1e48a.firebasestorage.app",
+            messagingSenderId: "96498485165",
+            appId: "1:96498485165:web:9655c09934a0b7c4c80324",
+            measurementId: "G-L6GR0D6Q04"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- HIGH-PERFORMANCE ENVIRONMENT CANVAS PHYSICS ENGINE (RAIN, LIGHTNING, TORNADO, TSUNAMI) ---
+        const canvas = document.getElementById("disasterCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+
+        // 1. Rain Matrix Parameters
+        const maxRain = 110;
+        const rainDrops = [];
+        for (let i = 0; i < maxRain; i++) {
+            rainDrops.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                l: Math.random() * 25 + 10,
+                v: Math.random() * 12 + 15
+            });
+        }
+
+        // 2. Tornado Vortex Particles
+        const tornadoParticles = [];
+        const maxTornadoParticles = 250;
+        let tornadoX = w * 0.75; 
+        let tornadoTargetX = w * 0.75;
+
+        for(let i=0; i < maxTornadoParticles; i++) {
+            tornadoParticles.push({
+                angle: Math.random() * Math.PI * 2,
+                radius: Math.random() * 80 + 5,
+                y: Math.random() * h,
+                speed: Math.random() * 0.06 + 0.02,
+                size: Math.random() * 2 + 1
+            });
+        }
+
+        // 3. Lightning Strike Management
+        let flashOpacity = 0;
+        let lightningBolt = [];
+
+        function generateLightning() {
+            let startX = Math.random() * w;
+            let startY = 0;
+            lightningBolt = [{x: startX, y: startY}];
+            
+            while(startY < h * 0.7) {
+                startX += (Math.random() - 0.5) * 45;
+                startY += Math.random() * 35 + 10;
+                lightningBolt.push({x: startX, y: startY});
+            }
+            flashOpacity = 0.45;
+        }
+
+        // 4. Tsunami Wave Simulation Configuration
+        let waveTime = 0;
+
+        function runEnvironmentEngine() {
+            ctx.clearRect(0, 0, w, h);
+
+            // Trigger Lightning Flash Atmosphere
+            if (Math.random() < 0.003 && flashOpacity <= 0) {
+                generateLightning();
+            }
+
+            if (flashOpacity > 0) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${flashOpacity})`;
+                ctx.fillRect(0, 0, w, h);
+                flashOpacity -= 0.03;
+
+                // Render Lightning Structural Bolt Tree
+                ctx.strokeStyle = "rgba(165, 180, 252, 0.9)";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                if(lightningBolt.length > 0) {
+                    ctx.moveTo(lightningBolt[0].x, lightningBolt[0].y);
+                    for(let i=1; i<lightningBolt.length; i++) {
+                        ctx.lineTo(lightningBolt[i].x, lightningBolt[i].y);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // Draw Dynamic Tsunami Olas (Layered Sine Waves at Bottom)
+            waveTime += 0.02;
+            ctx.fillStyle = "rgba(30, 41, 59, 0.22)";
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            for(let x=0; x<=w; x+=20) {
+                let y = h - 65 + Math.sin(x * 0.004 + waveTime) * 20 + Math.cos(x * 0.002 + waveTime * 0.5) * 10;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(w, h);
+            ctx.fill();
+
+            ctx.fillStyle = "rgba(59, 130, 246, 0.12)";
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            for(let x=0; x<=w; x+=20) {
+                let y = h - 50 + Math.sin(x * 0.005 - waveTime * 0.8) * 15;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(w, h);
+            ctx.fill();
+
+            // Physics Loop: Render Rain Drops
+            ctx.strokeStyle = "rgba(148, 163, 184, 0.18)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let i = 0; i < maxRain; i++) {
+                let p = rainDrops[i];
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x + (p.v * 0.08), p.y + p.l);
+                p.y += p.v;
+                p.x += p.v * 0.08;
+                if (p.y > h) {
+                    p.y = -p.l;
+                    p.x = Math.random() * w;
+                }
+            }
+            ctx.stroke();
+
+            // Smoothly drift Tornado vortex location horizontally
+            if (Math.random() < 0.01) tornadoTargetX = Math.random() * w;
+            tornadoX += (tornadoTargetX - tornadoX) * 0.01;
+
+            // Physics Loop: Dynamic Swirling Tornado Vortex
+            for(let i=0; i < maxTornadoParticles; i++) {
+                let p = tornadoParticles[i];
+                p.angle += p.speed;
+                
+                // Taper the vortex down toward the ground level to form cone matrix
+                let coneScale = (p.y / h) * 2.2; 
+                let currentRadius = p.radius * coneScale;
+                
+                let px = tornadoX + Math.cos(p.angle) * currentRadius;
+                
+                ctx.fillStyle = `rgba(124, 58, 237, ${0.08 + (coneScale * 0.05)})`;
+                ctx.fillRect(px, p.y, p.size, p.size);
+
+                p.y -= 1.2; // Uplift force
+                if (p.y < 0) {
+                    p.y = h; // Reset to matrix baseline
+                    p.radius = Math.random() * 80 + 5;
+                }
+            }
+
+            requestAnimationFrame(runEnvironmentEngine);
+        }
+        requestAnimationFrame(runEnvironmentEngine);
+
+
+        // --- MAGNETIC LERP MOUSE ENGINE ---
+        const ring = document.getElementById("cursorRing");
+        const dot = document.getElementById("cursorDot");
+        
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let ringX = mouseX;
+        let ringY = mouseY;
+
+        document.addEventListener("mousemove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            dot.style.left = `${mouseX}px`;
+            dot.style.top = `${mouseY}px`;
+        });
+
+        function engineCursorPhysics() {
+            let lerpFactor = 0.08; 
+            ringX += (mouseX - ringX) * lerpFactor;
+            ringY += (mouseY - ringY) * lerpFactor;
+            ring.style.left = `${ringX}px`;
+            ring.style.top = `${ringY}px`;
+            requestAnimationFrame(engineCursorPhysics);
+        }
+        requestAnimationFrame(engineCursorPhysics);
+
+        function attachCursorInteractions() {
+            const interactiveElements = document.querySelectorAll('button, a, select, input, textarea, .mod-card, [onclick]');
+            interactiveElements.forEach(el => {
+                el.removeEventListener('mouseenter', addHoverState);
+                el.removeEventListener('mouseleave', removeHoverState);
+                el.addEventListener('mouseenter', addHoverState);
+                el.addEventListener('mouseleave', removeHoverState);
+            });
+        }
+
+        function addHoverState() { ring.classList.add('hovered'); }
+        function removeHoverState() { ring.classList.remove('hovered'); }
+
+        window.onload = () => {
+            initSeasonBadge();
+            initFirebaseRealtimeListeners();
+            setTimeout(attachCursorInteractions, 150);
+        };
+
+        // Core Architectural Routing Engine
+        function switchPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            const links = document.querySelectorAll('.nav-links a');
+            
+            for(let i=0; i<pages.length; i++) pages[i].classList.remove('active');
+            for(let i=0; i<links.length; i++) links[i].classList.remove('active');
+            
+            const targetPage = document.getElementById(pageId);
+            const targetNav = document.getElementById('nav-' + pageId);
+            
+            if(targetPage) targetPage.classList.add('active');
+            if(targetNav) targetNav.classList.add('active');
+            
+            window.scrollTo({top: 0});
+            if(pageId === 'apply') checkUserApplicationStatus();
+            setTimeout(attachCursorInteractions, 60);
+        }
+
+        function copyIP() {
+            navigator.clipboard.writeText("items-bigger.gl.joinmc.link");
+            const icon = document.querySelector('.copy-icon');
+            icon.className = "fa-solid fa-check";
+            icon.style.color = "#10b981";
+            setTimeout(() => {
+                icon.className = "fa-regular fa-copy copy-icon";
+                icon.style.color = "var(--nebula-blue)";
+            }, 2000);
+        }
+
+        function initSeasonBadge() {
+            db.collection("settings").doc("season").get().then((doc) => {
+                let savedBadge = "Season 1 Now Operational";
+                if (doc.exists && doc.data().text) {
+                    savedBadge = doc.data().text;
+                }
+                document.getElementById('liveSeasonBadge').innerHTML = `<i class="fa-solid fa-rocket"></i> ${savedBadge}`;
+                const inputField = document.getElementById('seasonTextInput');
+                if(inputField) inputField.value = savedBadge;
+            }).catch(err => console.error("Error cargando temporada:", err));
+        }
+
+        // --- FIREBASE LIVE SYSTEM EVENT SYNC LISTENERS ---
+        function initFirebaseRealtimeListeners() {
+            // Realtime Sync for Modpacks Collection
+            db.collection('serverModpacks').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+                let list = [];
+                snapshot.forEach(doc => {
+                    list.push({ id: doc.id, ...doc.data() });
+                });
+                renderPublicModpacks(list);
+                renderAdminModpacks(list);
+            }, error => console.error("Firebase Sync Error:", error));
+
+            // Realtime Sync for Staff Applications
+            db.collection('serverApps').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+                let apps = [];
+                snapshot.forEach(doc => {
+                    apps.push({ id: doc.id, ...doc.data() });
+                });
+                renderAdminApplications(apps);
+            }, error => console.error("Firebase Sync Error:", error));
+        }
+
+        // --- STAFF APPLY ACTIONS LINKED TO FIRESTORE ---
+        async function submitForm(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('q1').value.trim();
+            const appData = {
+                username: username,
+                discord: document.getElementById('q2').value.trim(),
+                time: document.getElementById('q3').value,
+                qualities: document.getElementById('q4').value.trim(),
+                respectAdmins: document.getElementById('q5').value,
+                fitIn: document.getElementById('q6').value,
+                respectRules: document.getElementById('q7').value,
+                understandRules: document.getElementById('q8').value,
+                confidential: document.getElementById('q9').checked ? "Yes" : "No",
+                status: 'pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('serverApps').add(appData);
+                localStorage.setItem('myApplicationUser', username);
+                
+                alert("Success: Application dispatched to our cloud database queue!");
+                document.getElementById('quizForm').reset();
+                
+                document.getElementById('l5').innerText = "5";
+                document.getElementById('l6').innerText = "5";
+                document.getElementById('l7').innerText = "5";
+                document.getElementById('l8').innerText = "5";
+                
+                checkUserApplicationStatus();
+            } catch(error) {
+                console.error("Submission Error:", error);
+                alert("Cloud Sync Failure: Unable to store deployment data profiles.");
+            }
+        }
+
+        async function checkUserApplicationStatus() {
+            const user = localStorage.getItem('myApplicationUser');
+            const box = document.getElementById('userStatusBox');
+            if (!user || !box) return;
+
+            try {
+                const snapshot = await db.collection('serverApps').where('username', '==', user).limit(1).get();
+                if(!snapshot.empty) {
+                    const currentApp = snapshot.docs[0].data();
+                    box.style.display = 'block';
+                    if (currentApp.status === 'pending') {
+                        box.style.background = 'rgba(255,255,255,0.03)';
+                        box.style.border = '1px solid rgba(255,255,255,0.08)';
+                        box.innerHTML = `<h3><i class="fa-solid fa-clock"></i> Submission Status: Pending Review</h3><p style="color:var(--text-muted); font-size:0.95rem; margin-top:6px;">Your file parameters are preserved. Administration evaluation is underway.</p>`;
+                    } else if (currentApp.status === 'accepted') {
+                        box.style.background = 'rgba(16, 185, 129, 0.1)';
+                        box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                        box.innerHTML = `<h3 style="color:#34d399;"><i class="fa-solid fa-circle-check"></i> Registration Status: Accepted</h3><p style="font-size:0.95rem; margin-top:6px;">Profile cleared. Open an assignment ticket inside our Discord interface.</p>`;
+                    } else if (currentApp.status === 'rejected') {
+                        box.style.background = 'rgba(239, 68, 68, 0.08)';
+                        box.style.border = '1px solid rgba(239, 68, 68, 0.25)';
+                        box.innerHTML = `<h3 style="color:#f87171;"><i class="fa-solid fa-circle-xmark"></i> Registration Status: Declined</h3><p style="font-size:0.95rem; margin-top:6px;">Internal operations board determined not to accept this user node for the current timeline cycle.</p>`;
+                    }
+                } else {
+                    box.style.display = 'none';
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // --- ADMIN SECURE ACTIONS ---
+        function loginAdmin() {
+            if (document.getElementById('adminPassword').value === "creativitytest") {
+                document.getElementById('adminAuthBox').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                alert("Security Core Failure: Invalid administrative key signature.");
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById('adminPassword').value = "";
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('adminAuthBox').style.display = 'block';
+        }
+
+        function updateSeasonBadge() {
+            const newText = document.getElementById('seasonTextInput').value.trim();
+            if(!newText) {
+                alert("Input Error: Text allocation field cannot remain empty.");
+                return;
+            }
+
+            db.collection("settings").doc("season").set({ text: newText }).then(() => {
+                initSeasonBadge();
+                alert("Database Synced: Main screen server badge updated successfully.");
+            }).catch(err => alert("Error al actualizar: " + err.message));
+        }
+
+        // --- CLOUD DATABANK VIEW RENDER ENGINES ---
+        function renderPublicModpacks(list) {
+            const table = document.getElementById('publicModpackList');
+            if(!table) return;
+
+            if(list.length === 0) {
+                table.innerHTML = `<tr><td colspan="4" style="color:var(--text-muted); text-align:center; font-size:0.95rem; padding: 2rem;"><i class="fa-solid fa-circle-info"></i> No storage distribution packages active in the current block matrix.</td></tr>`;
+                return;
+            }
+
+            let rows = "";
+            for(let i=0; i<list.length; i++) {
+                rows += `<tr>
+                    <td style="font-family:'Orbitron'; font-weight:bold; color:var(--gear-orange);">${list[i].version}</td>
+                    <td>${list[i].date}</td>
+                    <td style="color:var(--text-muted); font-size:0.9rem;"><i class="fa-solid fa-file-zipper"></i> ${list[i].fileName}</td>
+                    <td><button class="btn btn-sm" onclick="alert('Downloading dataset target: ${list[i].fileName}')"><i class="fa-solid fa-download"></i> Fetch</button></td>
+                </tr>`;
+            }
+            table.innerHTML = rows;
+            setTimeout(attachCursorInteractions, 30);
+        }
+
+        function renderAdminModpacks(list) {
+            const adminTable = document.getElementById('adminModpackList');
+            if(!adminTable) return;
+            
+            if(list.length === 0) {
+                adminTable.innerHTML = `<tr><td colspan="3" style="color:var(--text-muted); font-size:0.95rem; padding:1rem;">No data allocations detected on cloud drive space arrays.</td></tr>`;
+            } else {
+                let adminRows = "";
+                for(let i=0; i<list.length; i++) {
+                    adminRows += `<tr>
+                        <td><strong>${list[i].version}</strong></td>
+                        <td style="color:var(--text-muted); font-size:0.9rem;">${list[i].fileName}</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="deleteModpack('${list[i].id}')"><i class="fa-solid fa-trash"></i> Drop</button></td>
+                    </tr>`;
+                }
+                adminTable.innerHTML = adminRows;
+            }
+            setTimeout(attachCursorInteractions, 30);
+        }
+
+        function renderAdminApplications(apps) {
+            const appsContainer = document.getElementById('applicationsList');
+            if(!appsContainer) return;
+
+            if(apps.length === 0) {
+                appsContainer.innerHTML = "<div style='font-size:0.95rem; padding:1rem;'>No external recruitment parameters logged into firestore memory blocks.</div>";
+                return;
+            }
+
+            let appCards = "";
+            for(let i=0; i<apps.length; i++) {
+                appCards += `<div style="background:rgba(0,0,0,0.4); padding:1.5rem; border-radius:10px; margin-bottom:1.2rem; border-left:4px solid #4f46e5;">
+                    <p style="font-size:1rem;"><strong>Minecraft Node:</strong> ${apps[i].username} | <strong>Discord Node:</strong> ${apps[i].discord}</p>
+                    <p style="font-size:0.95rem; margin:0.6rem 0; color:#cbd5e1;"><strong>Stated Competencies:</strong> ${apps[i].qualities}</p>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Matrix Metrics: Hierarchy (${apps[i].respectAdmins}/10) | Teamwork (${apps[i].fitIn}/10) | Rules Adherence (${apps[i].respectRules}/10) | Process Speed (${apps[i].understandRules}/10) | Allocation Status: <strong style="color:#fcd34d;">${apps[i].status.toUpperCase()}</strong></p>
+                    <div style="margin-top:1rem; display:flex; gap:10px;">
+                        <button class="btn btn-sm" style="background:#10b981;" onclick="changeStatus('${apps[i].id}', 'accepted')">Authorize Node</button>
+                        <button class="btn btn-sm btn-danger" onclick="changeStatus('${apps[i].id}', 'rejected')">Purge Profile</button>
+                    </div>
+                </div>`;
+            }
+            appsContainer.innerHTML = appCards;
+            setTimeout(attachCursorInteractions, 30);
+        }
+
+        // --- FIRESTORE MUTATION PROTOTYPES ---
+        async function uploadModpack() {
+            const ver = document.getElementById('modpackVersion').value.trim();
+            const file = document.getElementById('modpackFile');
+
+            if(!ver || file.files.length === 0) {
+                alert("Matrix Input Fault: Define build distribution tokens and link a valid compressed data block.");
+                return;
+            }
+
+            const newPack = {
+                version: ver,
+                fileName: file.files[0].name,
+                date: new Date().toLocaleDateString(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('serverModpacks').add(newPack);
+                document.getElementById('modpackVersion').value = "";
+                file.value = "";
+                alert("Success: Modpack metadata deployed to production.");
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function deleteModpack(id) {
+            try {
+                await db.collection('serverModpacks').doc(id).delete();
+                alert("Target package dropped.");
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function changeStatus(id, stat) {
+            try {
+                await db.collection('serverApps').doc(id).update({ status: stat });
+                checkUserApplicationStatus();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function clearAllApplications() {
+            if(confirm("Critical System Warning: This directive will permanently overwrite and wipe out all cloud application documents. Confirm system purge?")) {
+                try {
+                    const snapshot = await db.collection('serverApps').get();
+                    const batch = db.batch();
+                    snapshot.docs.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                    alert("Databank wiped successfully.");
+                    checkUserApplicationStatus();
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
